@@ -247,6 +247,7 @@ void read_args(int argc, char *argv[])
                     print_usage(argv[0]);
                     exit(EXIT_FAILURE);
                 }
+                i += 2;
             }
             else
             {
