@@ -65,7 +65,6 @@ bool init_conn_node(struct conn_node *node, int id, struct conn_list *list)
         {
             strcpy(cong_str, "cubic");
         }
-        printf("Set congestion control to %s \n", cong_str);
         if (setsockopt(node->sockfd, IPPROTO_TCP, TCP_CONGESTION, cong_str, strlen(cong_str)) < 0)
             error("ERROR: set TCP_CONGESTION option");
     }
