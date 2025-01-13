@@ -6,6 +6,8 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 
+extern enum congestion_control cong;
+
 /* initialize connection */
 bool init_conn_node(struct conn_node *node, int id, struct conn_list *list)
 {
@@ -52,7 +54,23 @@ bool init_conn_node(struct conn_node *node, int id, struct conn_list *list)
         return false;
     }
 
-    if (connect(node->sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+    char cong_str[10];
+    if (cong != DEFAULT)
+    {
+        if (cong == DCTCP)
+        {
+            strcpy(cong_str, "dctcp");
+        }
+        else if (cong == CUBIC)
+        {
+            strcpy(cong_str, "cubic");
+        }
+        printf("Set congestion control to %s \n", cong_str);
+        if (setsockopt(node->sockfd, IPPROTO_TCP, TCP_CONGESTION, cong_str, strlen(cong_str)) < 0)
+            error("ERROR: set TCP_CONGESTION option");
+    }
+
+    if (connect(node->sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         char msg[256] = {0};
         snprintf(msg, 256, "Error: connect() (to %s:%hu) in init_conn_node()", list->ip, list->port);

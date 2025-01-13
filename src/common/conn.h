@@ -7,6 +7,13 @@
 #include <pthread.h>
 #include <stdbool.h>
 
+enum congestion_control
+{
+    DCTCP,
+    CUBIC,
+    DEFAULT
+};
+
 struct conn_list;
 
 struct conn_node

@@ -15,7 +15,9 @@
 #include "../common/cdf.h"
 #include "../common/conn.h"
 
-bool verbose_mode = false;  /* by default, we don't give more detailed output */
+bool verbose_mode = false; /* by default, we don't give more detailed output */
+
+enum congestion_control cong = DEFAULT;
 
 char config_file_name[80] = {0};    /* configuration file */
 char dist_file_name[80] = {0};  /* flow size distribution file */
@@ -194,15 +196,16 @@ int main(int argc, char *argv[])
 void print_usage(char *program)
 {
     printf("Usage: %s [options]\n", program);
-    printf("-b <bandwidth>  expected average RX bandwidth in Mbits/sec\n");
-    printf("-c <file>       configuration file (required)\n");
-    printf("-n <number>     number of requests (instead of -t)\n");
-    printf("-t <time>       time in seconds (instead of -n)\n");
-    printf("-l <file>       log file with flow completion times (default %s)\n", fct_log_name);
-    printf("-s <seed>       seed to generate random numbers (default current time)\n");
-    printf("-r <file>       python script to parse result files\n");
-    printf("-v              give more detailed output (verbose)\n");
-    printf("-h              display help information\n");
+    printf("-b <bandwidth>      expected average RX bandwidth in Mbits/sec\n");
+    printf("-c <file>           configuration file (required)\n");
+    printf("-C <cong control>   congestion control(CUBIC or DCTCP)\n");
+    printf("-n <number>         number of requests (instead of -t)\n");
+    printf("-t <time>           time in seconds (instead of -n)\n");
+    printf("-l <file>           log file with flow completion times (default %s)\n", fct_log_name);
+    printf("-s <seed>           seed to generate random numbers (default current time)\n");
+    printf("-r <file>           python script to parse result files\n");
+    printf("-v                  give more detailed output (verbose)\n");
+    printf("-h                  display help information\n");
 }
 
 /* read command line arguments */
@@ -249,6 +252,34 @@ void read_args(int argc, char *argv[])
             else
             {
                 printf("Cannot read configuration file name\n");
+                print_usage(argv[0]);
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-C") == 0)
+        {
+            if (i+1 < argc)
+            {
+                if (strcmp(argv[i+1], "DCTCP") == 0)
+                {
+                    printf("Use the DCTCP congestion control. \n");
+                    cong = DCTCP;
+                }
+                else if (strcmp(argv[i+1], "CUBIC") == 0)
+                {
+                    printf("Use the CUBIC congestion control. \n");
+                    cong = CUBIC;
+                }
+                else
+                {
+                    printf("Cannot use this congestion control: %s \n", argv[i+1]);
+                    print_usage(argv[0]);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                printf("Cannot read congestion control.\n");
                 print_usage(argv[0]);
                 exit(EXIT_FAILURE);
             }

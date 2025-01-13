@@ -19,6 +19,15 @@ unsigned int sleep_overhead_us = 50;
 bool verbose_mode = false;  /* by default, we don't give more detailed output */
 bool daemon_mode = false;   /* by default, we don't run the server as a daemon */
 
+enum congestion_control
+{
+    DCTCP,
+    CUBIC,
+    DEFAULT
+};
+
+enum congestion_control cong = DCTCP;
+
 /* print usage of the program */
 void print_usage(char *program);
 /* read command line arguments */
@@ -61,6 +70,26 @@ int main(int argc, char *argv[])
     /* set socket options */
     if (setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof(sock_opt)) < 0)
         error("Error: set SO_REUSEADDR option");
+    if (setsockopt(listen_fd, IPPROTO_TCP, TCP_NODELAY, &sock_opt, sizeof(sock_opt)) < 0)
+        error("ERROR: set TCP_NODELAY option");
+
+    /* set congestion control */
+    char cong_str[10];
+    if (cong != DEFAULT)
+    {
+        if (cong == DCTCP)
+        {
+            strcpy(cong_str, "dctcp");
+        }
+        else if (cong == CUBIC)
+        {
+            strcpy(cong_str, "cubic");
+        }
+        printf("Set congestion control to %s \n", cong_str);
+        if (setsockopt(listen_fd, IPPROTO_TCP, TCP_CONGESTION, cong_str, strlen(cong_str)) < 0)
+            error("ERROR: set TCP_CONGESTION option");
+    }
+
     if (setsockopt(listen_fd, IPPROTO_TCP, TCP_NODELAY, &sock_opt, sizeof(sock_opt)) < 0)
         error("ERROR: set TCP_NODELAY option");
 
@@ -167,10 +196,11 @@ void* handle_connection(void* ptr)
 void print_usage(char *program)
 {
     printf("Usage: %s [options]\n", program);
-    printf("-p <port>   port number (default %d)\n", TG_SERVER_PORT);
-    printf("-v          give more detailed output (verbose)\n");
-    printf("-d          run the server as a daemon\n");
-    printf("-h          display help information\n");
+    printf("-p <port>           port number (default %d)\n", TG_SERVER_PORT);
+    printf("-C <cong control>   congestion control(CUBIC or DCTCP)\n");
+    printf("-v                  give more detailed output (verbose)\n");
+    printf("-d                  run the server as a daemon\n");
+    printf("-h                  display help information\n");
 }
 
 /* Read command line arguments */
@@ -193,6 +223,34 @@ void read_args(int argc, char *argv[])
             else
             {
                 printf("Cannot read port number\n");
+                print_usage(argv[0]);
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-C") == 0)
+        {
+            if (i+1 < argc)
+            {
+                if (strcmp(argv[i+1], "DCTCP") == 0)
+                {
+                    printf("Use the DCTCP congestion control. \n");
+                    cong = DCTCP;
+                }
+                else if (strcmp(argv[i+1], "CUBIC") == 0)
+                {
+                    printf("Use the CUBIC congestion control. \n");
+                    cong = CUBIC;
+                }
+                else
+                {
+                    printf("Cannot use this congestion control: %s \n", argv[i+1]);
+                    print_usage(argv[0]);
+                    exit(EXIT_FAILURE);
+                }
+            }
+            else
+            {
+                printf("Cannot read congestion control.\n");
                 print_usage(argv[0]);
                 exit(EXIT_FAILURE);
             }
