@@ -32,7 +32,7 @@ In the main directory, do following operations:
 ### Server
 Example:
 ```
-./bin/server -p 5001 -d  
+./bin/server -p 5001 -d -C DCTCP 
 ```
 * **-p** : the TCP **port** that the server listens on (default 5001)
 
@@ -42,10 +42,12 @@ Example:
 
 * **-h** : display help information
 
+* -C : choose the congestion control algorithm (DCTCP/CUBIC)
+
 ### Client
 Example:
 ```
-./bin/client -b 900 -c conf/client_config.txt -n 5000 -l flows.txt -s 123 -r bin/result.py
+./bin/client -b 900 -c conf/client_config.txt -n 5000 -l flows.txt -s 123 -C CUBIC -r bin/result.py
 ```
 * **-b** : desired average RX **bandwidth** in Mbits/sec
  
@@ -65,12 +67,14 @@ Example:
 
 * **-h** : display **help** information
 
+* -C : choose the congestion control algorithm (DCTCP/CUBIC)
+
 Note that you need to specify either the number of requests (-n) or the time to generate requests (-t). But you cannot specify both of them.
 
 ### Incast-Client
 Example:
 ```
-./bin/incast-client -b 900 -c conf/incast_client_config.txt -l log -s 123 -r bin/result.py
+./bin/incast-client -b 900 -c conf/incast_client_config.txt -l log -s 123 -C CUBIC -r bin/result.py
 ```
 
 Same as **client** except for **-l**
