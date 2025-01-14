@@ -273,8 +273,6 @@ void read_args(int argc, char *argv[])
                 else
                 {
                     printf("Cannot use this congestion control: %s \n", argv[i+1]);
-                    print_usage(argv[0]);
-                    exit(EXIT_FAILURE);
                 }
                 i += 2;
             }

@@ -310,9 +310,8 @@ void read_args(int argc, char *argv[])
                 else
                 {
                     printf("Cannot use this congestion control: %s \n", argv[i+1]);
-                    print_usage(argv[0]);
-                    exit(EXIT_FAILURE);
                 }
+                i += 2;
             }
             else
             {
@@ -320,7 +319,6 @@ void read_args(int argc, char *argv[])
                 print_usage(argv[0]);
                 exit(EXIT_FAILURE);
             }
-            i += 2;
         }
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-n") == 0)
         {

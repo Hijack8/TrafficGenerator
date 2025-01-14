@@ -21,7 +21,7 @@ bool daemon_mode = false;  /* by default, we don't run the server as a daemon */
 
 enum congestion_control { DCTCP, CUBIC, DEFAULT };
 
-enum congestion_control cong = DCTCP;
+enum congestion_control cong = DEFAULT;
 
 /* print usage of the program */
 void print_usage(char *program);
@@ -217,8 +217,6 @@ void read_args(int argc, char *argv[]) {
           cong = CUBIC;
         } else {
           printf("Cannot use this congestion control: %s \n", argv[i + 1]);
-          print_usage(argv[0]);
-          exit(EXIT_FAILURE);
         }
         i += 2;
       } else {
